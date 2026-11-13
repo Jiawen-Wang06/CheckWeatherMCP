@@ -4,8 +4,8 @@ CheckWeatherMCP is a command-line weather assistant. It uses an OpenAI chat mode
 
 ## How it works
 
-- [`mcp_client.py`](./mcp_client.py) starts an interactive chat and connects to the weather server over MCP's standard I/O transport. LangGraph routes weather-tool calls, and the client uses the `gpt-4o-mini` OpenAI model.
-- [`weather_server.py`](./weather_server.py) exposes the `get_weather` tool and makes requests to OpenWeatherMap.
+- [`mcp_client.py`](./mcp_client.py) starts an interactive chat and connects to the weather server over MCP's standard I/O transport. LangGraph routes weather-tool calls, and the client uses the `gpt-4o-mini` OpenAI model. It also lists and invokes prompts provided by the server.
+- [`weather_server.py`](./weather_server.py) exposes the `get_weather` tool and makes requests to OpenWeatherMap. It also provides `compare_weather_prompt`, which guides the assistant to fetch and compare two locations' temperatures, conditions, and wind speeds in a concise structured summary.
 - Both files load credentials from the project-root `.env` file. `.env` is ignored by Git; use [`.env.example`](./.env.example) as a template.
 
 ## Setup
@@ -46,6 +46,22 @@ What's the weather in London, UK?
 ```
 
 Enter `exit`, `quit`, or `q` to end the chat. The server can also be run on its own with `python .\weather_server.py`, but the client is needed to chat with the assistant.
+
+### Compare two locations with the server prompt
+
+In the chat, list the prompts available from the server:
+
+```text
+/prompts
+```
+
+Invoke the comparison prompt with two locations:
+
+```text
+/prompt compare_weather_prompt "London,uk" "Paris,fr"
+```
+
+The client sends the prompt returned by the server to the assistant. The assistant uses the weather tool to gather both locations' data and presents their key differences, typically in a table or bulleted list. For a prompt argument containing spaces, keep it inside quotes.
 
 ## Troubleshooting
 
