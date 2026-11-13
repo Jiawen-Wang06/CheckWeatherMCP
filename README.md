@@ -47,6 +47,17 @@ What's the weather in London, UK?
 
 Enter `exit`, `quit`, or `q` to end the chat. The server can also be run on its own with `python .\weather_server.py`, but the client is needed to chat with the assistant.
 
+### Load a server resource
+
+List the available resources, then load one by its URI:
+
+```text
+/resources
+/resource file://delivery_log
+```
+
+The current delivery-log resource reads `delivery_log.txt` from the project root. After loading it, enter an instruction to ask the assistant to work with the content, or press Enter to add it to the ongoing chat context. Resource content is sent to the OpenAI model when passed to the assistant; avoid loading sensitive data unless you are authorized to share it with that service.
+
 ### Compare two locations with the server prompt
 
 In the chat, list the prompts available from the server:
