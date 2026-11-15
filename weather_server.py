@@ -109,4 +109,5 @@ def delivery_log_resource() -> list[str]:
 
 if __name__ == "__main__":
     # The server will run and listen for requests from the client over stdio
+    print("Starting MCP Weather Server...")
     mcp.run(transport="stdio")
