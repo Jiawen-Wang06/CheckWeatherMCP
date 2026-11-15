@@ -1,12 +1,42 @@
 # CheckWeatherMCP
 
-CheckWeatherMCP is a command-line weather assistant. It uses an OpenAI chat model to interpret a question, calls a local Model Context Protocol (MCP) weather tool, and fetches current conditions from OpenWeatherMap. Results include the weather description, temperature and feels-like temperature in Celsius, humidity, and wind speed in meters per second.
+CheckWeatherMCP is a multi-server MCP client and assistant that combines weather data with task management. The client connects to multiple MCP servers over stdio, loads the tools from each server into a single LangGraph agent, and lets the assistant call the relevant tool set based on the user's request.
 
-## How it works
+## What it does
 
-- [`mcp_client.py`](./mcp_client.py) starts an interactive chat and connects to the weather server over MCP's standard I/O transport. LangGraph routes weather-tool calls, and the client uses the `gpt-4o-mini` OpenAI model. It also lists and invokes prompts provided by the server.
-- [`weather_server.py`](./weather_server.py) exposes the `get_weather` tool and makes requests to OpenWeatherMap. It also provides `compare_weather_prompt`, which guides the assistant to fetch and compare two locations' temperatures, conditions, and wind speeds in a concise structured summary.
-- Both files load credentials from the project-root `.env` file. `.env` is ignored by Git; use [`.env.example`](./.env.example) as a template.
+- [`mcp_client.py`](./mcp_client.py) creates a `MultiServerMCPClient` and connects to the configured servers in a `server_configs` dictionary.
+- The agent loads tools from all connected servers and uses `gpt-4o-mini` to decide when to call them.
+- The project currently includes:
+  - [`weather_server.py`](./weather_server.py): exposes weather tools and resources for OpenWeatherMap data.
+  - [`task_server.py`](./task_server.py): exposes task-management tools, a travel-planning prompt, and a meeting-notes resource.
+- Both servers load secrets from the project-root `.env` file. `.env` is ignored by Git; use [`.env.example`](./.env.example) as a template.
+
+## Architecture
+
+The client connects to two MCP servers at startup:
+
+```python
+server_configs = {
+    "weather": {
+        "command": "python",
+        "args": ["weather_server.py"],
+        "transport": "stdio",
+    },
+    "tasks": {
+        "command": "python",
+        "args": ["task_server.py"],
+        "transport": "stdio",
+    }
+}
+```
+
+This means the agent can combine capabilities from both servers without requiring two separate chats. A single conversation can:
+
+- fetch the current weather in a city,
+- add items to the task list,
+- list tasks,
+- use server prompts tailored to the relevant server, and
+- load and work with server resources.
 
 ## Setup
 
@@ -22,7 +52,7 @@ CheckWeatherMCP is a command-line weather assistant. It uses an OpenAI chat mode
    if (-not (Test-Path .env)) { Copy-Item .env.example .env }
    ```
 
-   Fill in both values in `.env`:
+3. Fill in the required values in `.env`:
 
    ```dotenv
    OPENWEATHERMAP_API_KEY=your_openweathermap_api_key
@@ -39,43 +69,100 @@ From the project root, start the client:
 python .\mcp_client.py
 ```
 
-The client starts the MCP weather server automatically. Ask a question such as:
+The client starts the configured MCP servers and loads their tools automatically. You can then ask questions such as:
 
 ```text
 What's the weather in London, UK?
 ```
 
-Enter `exit`, `quit`, or `q` to end the chat. The server can also be run on its own with `python .\weather_server.py`, but the client is needed to chat with the assistant.
-
-### Load a server resource
-
-List the available resources, then load one by its URI:
+or:
 
 ```text
-/resources
-/resource file://delivery_log
+Add "Buy groceries" to my task list.
 ```
 
-The current delivery-log resource reads `delivery_log.txt` from the project root. After loading it, enter an instruction to ask the assistant to work with the content, or press Enter to add it to the ongoing chat context. Resource content is sent to the OpenAI model when passed to the assistant; avoid loading sensitive data unless you are authorized to share it with that service.
+Enter `exit`, `quit`, or `q` to end the chat.
 
-### Compare two locations with the server prompt
+## Chat commands
 
-In the chat, list the prompts available from the server:
+The client supports server-aware commands for listing and invoking capabilities from any connected server.
+
+### List all prompts
 
 ```text
 /prompts
 ```
 
-Invoke the comparison prompt with two locations:
+This lists prompts from each connected server, with the server name included in the output.
+
+### Invoke a prompt on a specific server
 
 ```text
-/prompt compare_weather_prompt "London,uk" "Paris,fr"
+/prompt weather compare_weather_prompt "London,uk" "Paris,fr"
 ```
 
-The client sends the prompt returned by the server to the assistant. The assistant uses the weather tool to gather both locations' data and presents their key differences, typically in a table or bulleted list. For a prompt argument containing spaces, keep it inside quotes.
+```text
+/prompt tasks plan_trip_prompt "Tokyo" 4
+```
+
+The format is:
+
+```text
+/prompt <server_name> <prompt_name> "arg1" "arg2" ...
+```
+
+For prompt arguments containing spaces, keep them inside quotes.
+
+### List all resources
+
+```text
+/resources
+```
+
+This lists the resources available on each server, including each resource URI.
+
+### Load a resource from a specific server
+
+```text
+/resource weather file://delivery_log
+```
+
+```text
+/resource tasks file://meeting_notes
+```
+
+The resource content is loaded and then either:
+
+- added to the conversation context immediately when you press Enter, or
+- used as the basis for a follow-up instruction after you type a task for the assistant.
+
+## Server capabilities
+
+### Weather server
+
+[`weather_server.py`](./weather_server.py) exposes:
+
+- `get_weather(location: str)`
+- `compare_weather_prompt(location_a: str, location_b: str)`
+- `file://delivery_log` resource
+
+This server fetches weather data from OpenWeatherMap and returns the location, conditions, temperature, feels-like temperature, humidity, and wind speed.
+
+### Task server
+
+[`task_server.py`](./task_server.py) exposes:
+
+- `add_task(task_description: str)`
+- `list_tasks()`
+- `plan_trip_prompt(destination: str, duration_in_days: int)`
+- `file://meeting_notes` resource
+
+This server stores tasks in `tasks.txt` and provides a travel-planning workflow that saves itinerary items into the task list.
 
 ## Troubleshooting
 
 - If the OpenAI API key is missing or invalid, check `OPENAI_API_KEY` in `.env`.
 - If the weather tool reports an authentication error, verify the `OPENWEATHERMAP_API_KEY` value and that the key is active.
 - If a city cannot be found, try including its country code, for example `London,uk`.
+- If a prompt or resource is not found, check the exact server name and the URI or prompt name you are using.
+- If a tool call fails, make sure both MCP server processes are running through the client startup path and that the server files are in the project root.
