@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MCP DayPlanner</title>
+  <meta name="description" content="An AI assistant that combines live weather with task management: one LangGraph agent, two MCP servers.">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1><img src="/static/favicon.png" alt="" class="logo" width="28" height="28"> MCP DayPlanner</h1>
+      <p class="tagline">One AI agent, two MCP servers: live weather + your to-do list</p>
+    </div>
+    <nav class="actions">
+      <button type="button" id="aboutBtn" class="ghost">About</button>
+      <button type="button" id="keyBtn" class="ghost">🔑 API key</button>
+      <button type="button" id="resetBtn" class="ghost">New chat</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="chat" aria-label="Chat">
+      <div id="messages" class="messages" aria-live="polite">
+        <img class="hero intro" src="/static/header.webp" width="1400" height="460"
+             alt="MCP DayPlanner: an AI assistant that combines live weather with task management. A LangGraph agent (gpt-4o-mini) connects through MCP to a Weather Server for live weather and a Task Server for to-do management.">
+        <div class="msg ai intro">
+          <p>Hi! I'm an AI agent connected to two <strong>MCP servers</strong>: one for live weather, one for your to-do list. Ask me something, or try an example below. You'll see each tool I call, and which server it came from.</p>
+          <p>You can also use the servers' <strong>MCP prompts</strong> and <strong>resources</strong> directly: type <code>/prompts</code> or <code>/resources</code> to see what's available, or <code>/help</code> for all commands.</p>
+        </div>
+      </div>
+
+      <div class="examples" id="examples" aria-label="Example requests">
+        <button type="button" data-msg="Check the weather in Vancouver and add 'pack umbrella' to my tasks if it's raining.">☔ Vancouver weather → task</button>
+        <button type="button" data-msg="Which day in the next five days is best for a picnic in Toronto?">🌤️ Best picnic day in Toronto</button>
+        <button type="button" data-prompt="tasks/plan_trip_prompt" data-args='{"destination":"Montreal","duration_in_days":"3"}'>🧳 Plan a weather-aware 3-day trip to Montreal <span class="tag">MCP prompt</span></button>
+        <button type="button" data-prompt="tasks/plan_trip_for_future_date" data-args='{"destination":"Quebec City","from_date":"+2","to_date":"+4"}'>🗓️ Quebec City trip with dates <span class="tag">MCP prompt</span></button>
+        <button type="button" data-msg="What's on my to-do list?">📋 Show my tasks</button>
+        <button type="button" data-cmd="/prompts">⌨️ /prompts</button>
+        <button type="button" data-cmd="/resources">⌨️ /resources</button>
+      </div>
+
+      <form id="composer" class="composer" autocomplete="off">
+        <textarea id="input" rows="1" maxlength="1000" placeholder="Ask about the weather or your tasks… or type /help" aria-label="Message"></textarea>
+        <button type="submit" id="sendBtn">Send</button>
+      </form>
+      <p class="hint">Commands: <code>/prompts</code> · <code>/prompt &lt;server&gt; &lt;name&gt; "args"</code> · <code>/resources</code> · <code>/resource &lt;server&gt; &lt;uri&gt; [instruction]</code> · <code>/help</code></p>
+    </section>
+
+    <aside class="tasks" aria-label="Your tasks">
+      <h2>📋 Your tasks</h2>
+      <ul id="taskList"><li class="empty">No tasks yet.</li></ul>
+      <p class="fineprint">Tasks live in a temporary session that's deleted after a few hours of inactivity.</p>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    Weather data provided by <a href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer">OpenWeather</a>
+  </footer>
+
+  <!-- API key dialog -->
+  <dialog id="keyDialog" aria-labelledby="keyTitle">
+    <form id="keyForm" method="dialog">
+      <h2 id="keyTitle">Use your own OpenAI API key</h2>
+      <p>This demo runs on <strong>your</strong> OpenAI key, so you stay in control of usage and cost. Each message typically costs well under $0.01 with <span id="modelName">gpt-4o-mini</span>.</p>
+      <label for="keyInput">OpenAI API key</label>
+      <input id="keyInput" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false" required>
+      <div class="privacy">
+        <h3>🔒 We don't store your key</h3>
+        <ul>
+          <li>It's kept only in <strong>this browser tab</strong> and erased when you close the tab.</li>
+          <li>It's sent over HTTPS with each message and used <strong>only</strong> to call OpenAI for that message.</li>
+          <li>The server never saves, logs or shares it. It isn't even passed to the MCP servers.</li>
+        </ul>
+        <p class="tip">Tip: create a dedicated <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">project key</a> with a low spending limit, and revoke it when you're done.<span id="sourceLink"></span></p>
+      </div>
+      <p id="keyError" class="error" role="alert"></p>
+      <div class="dialog-actions">
+        <button type="button" id="forgetKeyBtn" class="ghost">Forget key</button>
+        <button type="button" id="keyCancelBtn" class="ghost">Cancel</button>
+        <button type="submit" id="keySaveBtn">Check &amp; use key</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- About dialog -->
+  <dialog id="aboutDialog" aria-labelledby="aboutTitle">
+    <h2 id="aboutTitle">How it works</h2>
+    <pre class="diagram">Browser ──HTTPS──► FastAPI + LangGraph agent (gpt-4o-mini)
+                         ├── MCP ──► weather server  (get_weather, get_forecast)
+                         └── MCP ──► tasks server    (add_task, list_tasks)</pre>
+    <ul>
+      <li><strong>Multi-server MCP:</strong> one agent loads tools and prompts from two separate MCP servers and combines them in one request.</li>
+      <li><strong>Private by design:</strong> bring your own key, isolated temporary sessions, no key storage.</li>
+    </ul>
+    <p id="aboutRepo"></p>
+    <div class="dialog-actions"><button type="button" id="aboutClose">Close</button></div>
+  </dialog>
+</body>
+</html>
