@@ -1,5 +1,5 @@
 """
-System evaluation for the CheckWeatherMCP agent.
+System evaluation for the MCP DayPlanner agent.
 
 Runs every case in eval/cases.jsonl through the real LangGraph agent + real MCP servers
 (weather server in mock mode, task server on an isolated temp file) and scores:
