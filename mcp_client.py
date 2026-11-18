@@ -2,6 +2,7 @@ import asyncio
 import os
 import shlex
 import uuid
+from datetime import date
 import logging
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -10,16 +11,18 @@ from dotenv import load_dotenv
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import AnyMessage, add_messages
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.prebuilt import tools_condition, ToolNode
+from langgraph.prebuilt import tools_condition
 from typing import Annotated, List, Literal
 from requests import session
 from typing_extensions import TypedDict
 from langchain_openai import ChatOpenAI
+from langchain_core.messages import ToolMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
-logging.basicConfig(level=logging.INFO)
+# Quiet by default; set LOG_LEVEL=INFO (or DEBUG) to see HTTP requests and other library logs.
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "WARNING").upper())
 load_dotenv(Path(__file__).with_name(".env"))
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 chat_config = {"configurable": {"thread_id": "weather-session-chat"}}
@@ -32,11 +35,13 @@ server_configs = {
         "command": "python",
         "args": ["weather_server.py"],
         "transport": "stdio",
+        "env": {"MCP_LOG_LEVEL": os.getenv("MCP_LOG_LEVEL", "WARNING")},
     },
     "tasks": {
         "command": "python",
         "args": ["task_server.py"],
         "transport": "stdio",
+        "env": {"MCP_LOG_LEVEL": os.getenv("MCP_LOG_LEVEL", "WARNING")},
     }
 }
 
@@ -45,26 +50,86 @@ class State(TypedDict):
     messages: Annotated[List[AnyMessage], add_messages]
 
 
-def create_graph(tools: list):
-    # LLM configuration 
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, openai_api_key=OPENAI_API_KEY)
+DEFERRED_WRITE = ("NOT EXECUTED: this change was requested in the same step as lookups, before their results were "
+                  "known. Nothing was changed. Check the lookup results first, then call it again only if it is still needed.")
+
+
+def make_ordered_tool_node(tools: list):
+    """
+    Execute the model's tool calls safely.
+
+    LangGraph's ToolNode runs all tool calls from one model turn concurrently. That's fine for
+    reads, but for writes it loses ordering: a 3-day itinerary saved as six add_task calls landed
+    in tasks.txt in random order, and "add X then list" could list before the add finished
+    (found by the eval's `order` check). Servers mark side-effect-free tools with the standard MCP
+    `readOnlyHint` annotation; a batch runs concurrently only if every call in it is read-only,
+    otherwise calls run one by one in the order the model issued them.
+    """
+    tools_by_name = {t.name: t for t in tools}
+    read_only = {t.name for t in tools if (t.metadata or {}).get("readOnlyHint")}
+
+    async def run_one(call: dict) -> ToolMessage:
+        tool = tools_by_name.get(call["name"])
+        if tool is None:
+            return ToolMessage(content=f"Error: '{call['name']}' is not a valid tool. Use one of: {', '.join(tools_by_name)}.",
+                               tool_call_id=call["id"], name=call["name"], status="error")
+        try:
+            return await tool.ainvoke(call)  # invoking with a ToolCall returns a ToolMessage
+        except Exception as e:  # surface tool failures to the model instead of crashing the graph
+            return ToolMessage(content=f"Error: {e!r}", tool_call_id=call["id"], name=call["name"], status="error")
+
+    async def ordered_tool_node(state: State) -> dict:
+        calls = state["messages"][-1].tool_calls
+        reads = [c for c in calls if c["name"] in read_only]
+        if len(reads) == len(calls):
+            return {"messages": list(await asyncio.gather(*(run_one(c) for c in calls)))}
+        if reads:
+            # "Look before you write": the model asked for lookups AND changes in the same step, i.e. before it
+            # could see the lookup results (e.g. get_weather + add_task("pack umbrella") for "add it IF it's
+            # raining"). Run the lookups and hold the changes back, so the model decides again with the data.
+            done = dict(zip((c["id"] for c in reads), await asyncio.gather(*(run_one(c) for c in reads))))
+            return {"messages": [done.get(c["id"]) or ToolMessage(content=DEFERRED_WRITE, tool_call_id=c["id"],
+                                                                  name=c["name"], status="error")
+                                 for c in calls]}
+        return {"messages": [await run_one(c) for c in calls]}
+
+    return ordered_tool_node
+
+
+def create_graph(tools: list, model: str = "gpt-4o-mini", api_key: str | None = None, checkpointer=None,
+                 today: date | None = None):
+    """
+    api_key: OpenAI key to use (defaults to OPENAI_API_KEY from .env). The web app passes each
+             visitor's own key here; it lives only in this graph object, which is built per request.
+    checkpointer: conversation memory; the web app shares one across requests so history survives.
+    today: the date the agent treats as today (default: the real date, read on every turn). The eval pins
+           it to the fixtures' date so "tomorrow" or "March 5" resolve the same way on every run.
+    """
+    # LLM configuration
+    llm = ChatOpenAI(model=model, temperature=0, openai_api_key=api_key or OPENAI_API_KEY)
     llm_with_tools = llm.bind_tools(tools)
     prompt_template = ChatPromptTemplate.from_messages([
-        ("system", "You are a helpful assistant. You have access to tools for checking the weather and managing a to-do list. Use the tools when necessary based on the user's request."),
+        ("system", "You are a helpful assistant. You have access to tools for checking the weather (current conditions and "
+                   "forecasts) and managing a to-do list. Use the tools when necessary based on the user's request. "
+                   "Today's date is {today}. Use it to turn relative dates such as 'tomorrow' or 'next Friday' into exact dates. "
+                   "Never answer weather questions from memory: always get the data with the weather tools. "
+                   "If the user names a place, call the tools right away with your best reading of it (fix obvious typos, "
+                   "use the best-known place with that name); only ask for clarification if a tool returns an error. "
+                   "If the user names no place at all, ask which city they mean instead of guessing. "
+                   "When an action depends on a tool result (for example 'add a task if it's raining'), get that result "
+                   "first, then decide."),
         MessagesPlaceholder("messages")
-    ])
+    ]).partial(today=lambda: (today or date.today()).strftime("%A, %Y-%m-%d"))
     chat_llm = prompt_template | llm_with_tools
 
     # Define chat node
-    def chat_node(state: State) -> State:
-        state["messages"] = chat_llm.invoke({"messages": state["messages"]})
-    
-        return state
+    async def chat_node(state: State) -> dict:
+        return {"messages": await chat_llm.ainvoke({"messages": state["messages"]})}
 
     # Build LangGraph with tool routing
     graph = StateGraph(State)
     graph.add_node("chat_node", chat_node)
-    graph.add_node("tool_node", ToolNode(tools=tools))
+    graph.add_node("tool_node", make_ordered_tool_node(tools))
     graph.add_edge(START, "chat_node")
     graph.add_conditional_edges("chat_node", tools_condition, {
         "tools": "tool_node",
@@ -72,7 +137,7 @@ def create_graph(tools: list):
     })
     graph.add_edge("tool_node", "chat_node")
 
-    return graph.compile(checkpointer=MemorySaver())
+    return graph.compile(checkpointer=checkpointer if checkpointer is not None else MemorySaver())
 
 async def list_all_prompts(client: MultiServerMCPClient, server_configs: dict):
     print("\nAvailable Prompts from all servers:")
@@ -274,7 +339,6 @@ async def main():
     client = MultiServerMCPClient(server_configs)
     print("Starting MultiServerMCPClient...")
     all_tools = await client.get_tools()
-    print(f"Loaded {len(all_tools)} tools")
     agent = create_graph(all_tools)
     print("MCP Agent is ready (connected to Weather and Task servers).")
     
