@@ -1,1 +1,8 @@
 .env
+
+# Eval run outputs
+eval/results/
+
+# Python caches
+__pycache__/
+.pytest_cache/
