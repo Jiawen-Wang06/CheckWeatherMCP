@@ -1,0 +1,562 @@
+{
+  "Rome": {
+    "location": "Rome",
+    "country": "IT",
+    "today_local": "2026-03-02",
+    "days": [
+      {
+        "date": "2026-03-02",
+        "weekday": "Monday",
+        "temp_min_c": 12.0,
+        "temp_max_c": 17.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.1,
+        "partial_day": true
+      },
+      {
+        "date": "2026-03-03",
+        "weekday": "Tuesday",
+        "temp_min_c": 11.0,
+        "temp_max_c": 15.0,
+        "conditions": "moderate rain, overcast clouds",
+        "chance_of_rain_pct": 90,
+        "rain_mm": 12.4,
+        "snow_mm": 0.0,
+        "wind_max_mps": 6.2,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-04",
+        "weekday": "Wednesday",
+        "temp_min_c": 10.0,
+        "temp_max_c": 14.0,
+        "conditions": "light rain, broken clouds",
+        "chance_of_rain_pct": 70,
+        "rain_mm": 3.1,
+        "snow_mm": 0.0,
+        "wind_max_mps": 5.0,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-05",
+        "weekday": "Thursday",
+        "temp_min_c": 11.0,
+        "temp_max_c": 18.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 5,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 2.8,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-06",
+        "weekday": "Friday",
+        "temp_min_c": 12.0,
+        "temp_max_c": 19.0,
+        "conditions": "few clouds, clear sky",
+        "chance_of_rain_pct": 10,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.3,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-07",
+        "weekday": "Saturday",
+        "temp_min_c": 13.0,
+        "temp_max_c": 20.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 2.5,
+        "partial_day": true
+      }
+    ],
+    "note": "Daily summary of OpenWeather's 3-hour forecast. Covers up to 5 days ahead; later dates are not available."
+  },
+  "London": {
+    "location": "London",
+    "country": "GB",
+    "today_local": "2026-03-02",
+    "days": [
+      {
+        "date": "2026-03-02",
+        "weekday": "Monday",
+        "temp_min_c": 6.0,
+        "temp_max_c": 10.0,
+        "conditions": "light rain, overcast clouds",
+        "chance_of_rain_pct": 80,
+        "rain_mm": 4.2,
+        "snow_mm": 0.0,
+        "wind_max_mps": 6.5,
+        "partial_day": true
+      },
+      {
+        "date": "2026-03-03",
+        "weekday": "Tuesday",
+        "temp_min_c": 5.0,
+        "temp_max_c": 9.0,
+        "conditions": "overcast clouds",
+        "chance_of_rain_pct": 30,
+        "rain_mm": 0.3,
+        "snow_mm": 0.0,
+        "wind_max_mps": 5.1,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-04",
+        "weekday": "Wednesday",
+        "temp_min_c": 7.0,
+        "temp_max_c": 13.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.2,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-05",
+        "weekday": "Thursday",
+        "temp_min_c": 6.0,
+        "temp_max_c": 11.0,
+        "conditions": "moderate rain, overcast clouds",
+        "chance_of_rain_pct": 95,
+        "rain_mm": 9.8,
+        "snow_mm": 0.0,
+        "wind_max_mps": 7.4,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-06",
+        "weekday": "Friday",
+        "temp_min_c": 5.0,
+        "temp_max_c": 10.0,
+        "conditions": "broken clouds, light rain",
+        "chance_of_rain_pct": 45,
+        "rain_mm": 0.8,
+        "snow_mm": 0.0,
+        "wind_max_mps": 5.6,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-07",
+        "weekday": "Saturday",
+        "temp_min_c": 6.0,
+        "temp_max_c": 9.0,
+        "conditions": "light rain",
+        "chance_of_rain_pct": 75,
+        "rain_mm": 2.9,
+        "snow_mm": 0.0,
+        "wind_max_mps": 6.0,
+        "partial_day": true
+      }
+    ],
+    "note": "Daily summary of OpenWeather's 3-hour forecast. Covers up to 5 days ahead; later dates are not available."
+  },
+  "Seattle": {
+    "location": "Seattle",
+    "country": "US",
+    "today_local": "2026-03-02",
+    "days": [
+      {
+        "date": "2026-03-02",
+        "weekday": "Monday",
+        "temp_min_c": 5.0,
+        "temp_max_c": 9.0,
+        "conditions": "moderate rain, overcast clouds",
+        "chance_of_rain_pct": 85,
+        "rain_mm": 8.1,
+        "snow_mm": 0.0,
+        "wind_max_mps": 5.8,
+        "partial_day": true
+      },
+      {
+        "date": "2026-03-03",
+        "weekday": "Tuesday",
+        "temp_min_c": 4.0,
+        "temp_max_c": 8.0,
+        "conditions": "light rain, overcast clouds",
+        "chance_of_rain_pct": 70,
+        "rain_mm": 3.6,
+        "snow_mm": 0.0,
+        "wind_max_mps": 4.9,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-04",
+        "weekday": "Wednesday",
+        "temp_min_c": 3.0,
+        "temp_max_c": 9.0,
+        "conditions": "overcast clouds",
+        "chance_of_rain_pct": 20,
+        "rain_mm": 0.1,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.7,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-05",
+        "weekday": "Thursday",
+        "temp_min_c": 2.0,
+        "temp_max_c": 8.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 2.9,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-06",
+        "weekday": "Friday",
+        "temp_min_c": 4.0,
+        "temp_max_c": 10.0,
+        "conditions": "light rain, broken clouds",
+        "chance_of_rain_pct": 60,
+        "rain_mm": 2.2,
+        "snow_mm": 0.0,
+        "wind_max_mps": 4.4,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-07",
+        "weekday": "Saturday",
+        "temp_min_c": 5.0,
+        "temp_max_c": 9.0,
+        "conditions": "light rain",
+        "chance_of_rain_pct": 65,
+        "rain_mm": 2.5,
+        "snow_mm": 0.0,
+        "wind_max_mps": 4.0,
+        "partial_day": true
+      }
+    ],
+    "note": "Daily summary of OpenWeather's 3-hour forecast. Covers up to 5 days ahead; later dates are not available."
+  },
+  "Tokyo": {
+    "location": "Tokyo",
+    "country": "JP",
+    "today_local": "2026-03-02",
+    "days": [
+      {
+        "date": "2026-03-02",
+        "weekday": "Monday",
+        "temp_min_c": 9.0,
+        "temp_max_c": 15.0,
+        "conditions": "light rain, broken clouds",
+        "chance_of_rain_pct": 75,
+        "rain_mm": 3.4,
+        "snow_mm": 0.0,
+        "wind_max_mps": 4.1,
+        "partial_day": true
+      },
+      {
+        "date": "2026-03-03",
+        "weekday": "Tuesday",
+        "temp_min_c": 8.0,
+        "temp_max_c": 16.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.0,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-04",
+        "weekday": "Wednesday",
+        "temp_min_c": 10.0,
+        "temp_max_c": 17.0,
+        "conditions": "few clouds",
+        "chance_of_rain_pct": 5,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.5,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-05",
+        "weekday": "Thursday",
+        "temp_min_c": 9.0,
+        "temp_max_c": 13.0,
+        "conditions": "heavy intensity rain, moderate rain",
+        "chance_of_rain_pct": 100,
+        "rain_mm": 28.5,
+        "snow_mm": 0.0,
+        "wind_max_mps": 9.2,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-06",
+        "weekday": "Friday",
+        "temp_min_c": 8.0,
+        "temp_max_c": 14.0,
+        "conditions": "scattered clouds",
+        "chance_of_rain_pct": 15,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 4.2,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-07",
+        "weekday": "Saturday",
+        "temp_min_c": 9.0,
+        "temp_max_c": 15.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.1,
+        "partial_day": true
+      }
+    ],
+    "note": "Daily summary of OpenWeather's 3-hour forecast. Covers up to 5 days ahead; later dates are not available."
+  },
+  "Toronto": {
+    "location": "Toronto",
+    "country": "CA",
+    "today_local": "2026-03-02",
+    "days": [
+      {
+        "date": "2026-03-02",
+        "weekday": "Monday",
+        "temp_min_c": -6.0,
+        "temp_max_c": -1.0,
+        "conditions": "overcast clouds",
+        "chance_of_rain_pct": 10,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 4.5,
+        "partial_day": true
+      },
+      {
+        "date": "2026-03-03",
+        "weekday": "Tuesday",
+        "temp_min_c": -4.0,
+        "temp_max_c": 2.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.8,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-04",
+        "weekday": "Wednesday",
+        "temp_min_c": -3.0,
+        "temp_max_c": 3.0,
+        "conditions": "light snow, overcast clouds",
+        "chance_of_rain_pct": 70,
+        "rain_mm": 0.0,
+        "snow_mm": 4.2,
+        "wind_max_mps": 6.1,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-05",
+        "weekday": "Thursday",
+        "temp_min_c": -2.0,
+        "temp_max_c": 4.0,
+        "conditions": "clear sky, few clouds",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.2,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-06",
+        "weekday": "Friday",
+        "temp_min_c": 0.0,
+        "temp_max_c": 6.0,
+        "conditions": "light rain, overcast clouds",
+        "chance_of_rain_pct": 80,
+        "rain_mm": 3.5,
+        "snow_mm": 0.0,
+        "wind_max_mps": 5.7,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-07",
+        "weekday": "Saturday",
+        "temp_min_c": -1.0,
+        "temp_max_c": 3.0,
+        "conditions": "broken clouds",
+        "chance_of_rain_pct": 20,
+        "rain_mm": 0.1,
+        "snow_mm": 0.0,
+        "wind_max_mps": 4.0,
+        "partial_day": true
+      }
+    ],
+    "note": "Daily summary of OpenWeather's 3-hour forecast. Covers up to 5 days ahead; later dates are not available."
+  },
+  "Quebec City": {
+    "location": "Quebec City",
+    "country": "CA",
+    "today_local": "2026-03-02",
+    "days": [
+      {
+        "date": "2026-03-02",
+        "weekday": "Monday",
+        "temp_min_c": -12.0,
+        "temp_max_c": -5.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.0,
+        "partial_day": true
+      },
+      {
+        "date": "2026-03-03",
+        "weekday": "Tuesday",
+        "temp_min_c": -10.0,
+        "temp_max_c": -4.0,
+        "conditions": "few clouds",
+        "chance_of_rain_pct": 5,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.6,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-04",
+        "weekday": "Wednesday",
+        "temp_min_c": -9.0,
+        "temp_max_c": -2.0,
+        "conditions": "snow, overcast clouds",
+        "chance_of_rain_pct": 90,
+        "rain_mm": 0.0,
+        "snow_mm": 11.5,
+        "wind_max_mps": 7.8,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-05",
+        "weekday": "Thursday",
+        "temp_min_c": -11.0,
+        "temp_max_c": -6.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 4.1,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-06",
+        "weekday": "Friday",
+        "temp_min_c": -8.0,
+        "temp_max_c": -1.0,
+        "conditions": "light snow",
+        "chance_of_rain_pct": 60,
+        "rain_mm": 0.0,
+        "snow_mm": 2.1,
+        "wind_max_mps": 5.2,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-07",
+        "weekday": "Saturday",
+        "temp_min_c": -9.0,
+        "temp_max_c": -3.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.3,
+        "partial_day": true
+      }
+    ],
+    "note": "Daily summary of OpenWeather's 3-hour forecast. Covers up to 5 days ahead; later dates are not available."
+  },
+  "Paris": {
+    "location": "Paris",
+    "country": "FR",
+    "today_local": "2026-03-02",
+    "days": [
+      {
+        "date": "2026-03-02",
+        "weekday": "Monday",
+        "temp_min_c": 8.0,
+        "temp_max_c": 14.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 2.1,
+        "partial_day": true
+      },
+      {
+        "date": "2026-03-03",
+        "weekday": "Tuesday",
+        "temp_min_c": 9.0,
+        "temp_max_c": 15.0,
+        "conditions": "few clouds",
+        "chance_of_rain_pct": 10,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 3.0,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-04",
+        "weekday": "Wednesday",
+        "temp_min_c": 7.0,
+        "temp_max_c": 12.0,
+        "conditions": "moderate rain",
+        "chance_of_rain_pct": 85,
+        "rain_mm": 7.7,
+        "snow_mm": 0.0,
+        "wind_max_mps": 6.1,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-05",
+        "weekday": "Thursday",
+        "temp_min_c": 8.0,
+        "temp_max_c": 13.0,
+        "conditions": "light rain, overcast clouds",
+        "chance_of_rain_pct": 60,
+        "rain_mm": 1.9,
+        "snow_mm": 0.0,
+        "wind_max_mps": 4.8,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-06",
+        "weekday": "Friday",
+        "temp_min_c": 9.0,
+        "temp_max_c": 16.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 2.4,
+        "partial_day": false
+      },
+      {
+        "date": "2026-03-07",
+        "weekday": "Saturday",
+        "temp_min_c": 10.0,
+        "temp_max_c": 17.0,
+        "conditions": "clear sky",
+        "chance_of_rain_pct": 0,
+        "rain_mm": 0.0,
+        "snow_mm": 0.0,
+        "wind_max_mps": 2.2,
+        "partial_day": true
+      }
+    ],
+    "note": "Daily summary of OpenWeather's 3-hour forecast. Covers up to 5 days ahead; later dates are not available."
+  }
+}
