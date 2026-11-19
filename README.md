@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="media/header.png" width="80%" alt="MCP DayPlanner: a LangGraph agent (gpt-4o-mini) connected through MCP to a Weather Server and a Task Server.">
+  <img src="media/header.png" width="90%" alt="MCP DayPlanner: a LangGraph agent (gpt-4o-mini) connected through MCP to a Weather Server and a Task Server.">
 </p>
 
 | | |
@@ -18,13 +18,52 @@
 
 ## Highlights
 
-- **Multi-server agent.** Turned plain-English requests into correct tool use across two services, with **100% tool selection and 100% argument accuracy** in the system eval, by building a **LangGraph** agent (**gpt-4o-mini**) that connects through **LangChain MCP adapters** over stdio to two **FastMCP** servers exposing 6 tools, 3 prompts and 2 resources.
-- **Measurable reliability.** Reached a **98.7% pass rate over 228 runs** (76 test cases × 3 trials each; 95% confidence interval 96.2–99.5%), by building a **76-case evaluation harness** that runs the real agent against the real MCP servers with pinned fixtures. It grades tool choice, arguments, grounding, final task state and write order, and uses **gpt-4o as an LLM judge** for faithfulness and per-case rubrics.
-- **An eval that is shown to catch failures.** Found and fixed **5 real defects** (for example, forecast questions went from 61.9% to 100%) and proved the grader can fail (pass rate drops to **14.5%** with tools removed, grounding to **37.7%** with shuffled weather), by adding **negative controls**, Wilson confidence intervals, pass^3 (the share of test cases that pass on all 3 trials, which measures consistency), and a change log for every edit to a case.
-- **Correct ordering without losing speed.** Raised task write order from **8.3% to 100%** with no measurable latency cost, by replacing LangGraph's default `ToolNode` with a **custom tool node** that runs read-only calls (MCP `readOnlyHint`) in parallel, writes in order, and holds writes back until lookups return ("look before you write").
-- **Weather-aware planning the model can't get wrong.** Brought the forecast category from **61.9% to 100%** and every trip rubric to 100%, by having code group the **OpenWeather** forecast by each location's local day, compute dates and weekdays, and pass explicit date ranges, instead of trusting the model with calendar math.
-- **A public demo that is safe to run.** Kept every API key out of storage, logs and the model's context, by building a **FastAPI** web app where visitors bring their own OpenAI key, with isolated per-session task files, key redaction, input limits, and per-IP rate limiting (10/minute, 60/hour).
-- **Automated delivery.** Shipped every merge to `master` to production behind a gate of **88 unit tests**, by building a **GitHub Actions** pipeline that runs the tests, builds a **Docker** image, pushes it to **GHCR** tagged with the commit SHA, and deploys that exact image to **Azure App Service**.
+Each highlight states the outcome achieved, how it is measured, and the approach used.
+
+- **Delivered a multi-server AI agent with 100% tool selection and 100% argument accuracy** in the system evaluation, by connecting a LangGraph agent to two independent MCP servers.
+  - Uses **gpt-4o-mini** in a **LangGraph** agent with conversation memory (`MemorySaver`).
+  - Connects through **LangChain MCP adapters** over stdio to two **FastMCP** servers.
+  - Exposes **6 tools, 3 prompts and 2 resources** across weather and task management.
+- **Achieved a 98.7% pass rate over 228 runs** (76 test cases × 3 trials; 95% confidence interval 96.2–99.5%), by building an evaluation harness that tests the real agent against the real MCP servers.
+  - Covers **18 categories**, including relative-date forecasts, multi-turn follow-ups, prompt injection hidden in tool results, and requests where the correct action is to do nothing.
+  - Grades tool choice, arguments, grounding in tool output, final task state and write order.
+  - Uses **gpt-4o as an LLM judge** for faithfulness and per-case rubrics.
+  - Pins weather fixtures and the current date, so every run is reproducible.
+- **Proved the evaluation detects real failures,** with the pass rate dropping to **14.5%** when tools are removed and grounding dropping to **37.7%** with shuffled weather data, by adding negative controls and statistical reporting.
+  - Reports **Wilson 95% confidence intervals** and **pass^3** (the share of cases that pass on all 3 trials), which measures consistency, not just one-time success.
+  - Records every change to an existing test case in a change log.
+- **Identified and resolved 5 real defects through evaluation,** raising overall pass rate from **89.4% to 98.7%**, by treating each eval failure as a tracked engineering issue.
+  - Detected a prompt-change regression (98.3% → 93.9%) before release and corrected it.
+  - Eliminated "blind" conditional writes, such as adding "pack umbrella" before checking for rain.
+- **Raised task write-order correctness from 8.3% to 100% with no measurable latency cost** (10.1 s → 10.4 s, within noise), by replacing LangGraph's default `ToolNode` with a custom tool node.
+  - Runs read-only calls (MCP `readOnlyHint`) in parallel and write calls in sequence.
+  - Holds writes back until lookups return, so the model sees results before acting ("look before you write").
+- **Raised forecast accuracy from 61.9% to 100%,** with every trip-planning rubric at 100%, by moving calendar logic from the model into code.
+  - Groups the **OpenWeather** forecast by each location's local day and computes dates and weekdays in code.
+  - Passes explicit date ranges to tools and includes today's date in the system prompt.
+  - Moves trip activities indoors automatically when the chance of rain or snow is 50% or higher.
+- **Secured a public demo so that no API key reaches storage, logs or the model's context,** by building a **FastAPI** web app on a bring-your-own-key model.
+  - Isolates each visitor in a separate, time-limited task file.
+  - Redacts key-shaped text before it reaches the model or memory, and strips request URLs from tool errors.
+  - Builds the MCP servers' environment explicitly, without the visitor's key.
+  - Enforces input limits and per-IP rate limiting (**10 per minute, 60 per hour**).
+- **Automated releases to production behind a gate of 88 unit tests,** by building a **GitHub Actions** CI/CD pipeline.
+  - Runs the test suite, builds a **Docker** image and pushes it to **GHCR** tagged with the commit SHA.
+  - Deploys that exact image to **Azure App Service** on every merge to `master`.
+
+## Skills Demonstrated
+
+- **AI Engineering**
+  - Agent design with LangGraph, Model Context Protocol (MCP) servers and clients, tool calling and prompt engineering.
+  - LLM evaluation: test-case design, LLM-as-judge, negative controls, confidence intervals and consistency metrics (pass^3).
+  - LLM security: prompt-injection testing, key redaction and bring-your-own-key design.
+- **Software Engineering**
+  - Python 3.13, FastAPI, async programming and concurrency control (parallel reads, ordered writes).
+  - Test-driven quality: 88 unit tests with pytest, reproducible fixtures and regression tracking.
+  - External API integration (OpenWeather) with on-disk caching, time-zone handling and error handling.
+- **Cloud and DevOps**
+  - Docker, GitHub Actions CI/CD, GitHub Container Registry and Azure App Service.
+  - Production practices: per-IP rate limiting, session isolation, SHA-tagged images and automated test gates.
 
 ## Evaluation
 
