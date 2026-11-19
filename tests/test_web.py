@@ -50,7 +50,8 @@ def test_sessions_are_isolated_and_deleted(client):
     a = client.post("/api/session").json()
     b = client.post("/api/session").json()
     assert a["session_id"] != b["session_id"]
-    assert {t["name"] for t in a["tools"]} == {"get_weather", "get_forecast", "add_task", "list_tasks"}
+    assert {t["name"] for t in a["tools"]} == {"get_weather", "get_forecast", "add_task", "list_tasks",
+                                                   "clear_tasks", "update_task"}
 
     sa = web.sessions[a["session_id"]]
     sa.tasks_file.write_text("secret task of A\n", encoding="utf-8")

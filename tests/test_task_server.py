@@ -52,3 +52,52 @@ def test_plan_trip_for_future_date_prompt():
 def test_plan_trip_for_future_date_rejects_bad_dates(start, end, expected):
     with pytest.raises(ValueError, match=expected):
         ts.plan_trip_for_future_date("Rome", start, end)
+
+
+def test_clear_tasks_empties_list(isolated_tasks_file):
+    ts.add_task("A")
+    ts.add_task("B")
+    assert "2 task(s) removed" in ts.clear_tasks()
+    assert ts.list_tasks() == []
+    assert isolated_tasks_file.read_text(encoding="utf-8") == ""
+
+
+def test_clear_tasks_when_file_missing():
+    assert "0 task(s) removed" in ts.clear_tasks()
+    assert ts.list_tasks() == []
+
+
+def test_update_task_by_number_is_one_based(isolated_tasks_file):
+    for t in ("A", "B", "C"):
+        ts.add_task(t)
+    assert "Task 2 was updated" in ts.update_task("2", "B2")
+    assert ts.list_tasks() == ["A", "B2", "C"]
+    assert isolated_tasks_file.read_text(encoding="utf-8") == "A\nB2\nC\n"
+
+
+def test_update_task_by_text_case_insensitive():
+    ts.add_task("Buy groceries")
+    ts.add_task("Call mom")
+    assert "updated" in ts.update_task("  call MOM ", "Call mom at 6pm")
+    assert ts.list_tasks() == ["Buy groceries", "Call mom at 6pm"]
+
+
+@pytest.mark.parametrize("target, expected", [("0", "no task number 0"), ("3", "no task number 3"),
+                                              ("Walk dog", "no task matches"), ("Dup", "several tasks")])
+def test_update_task_bad_target_leaves_list_unchanged(target, expected):
+    for t in ("Dup", "Dup"):
+        ts.add_task(t)
+    result = ts.update_task(target, "X")
+    assert result.startswith("Error") and expected in result and "1. Dup" in result
+    assert ts.list_tasks() == ["Dup", "Dup"]
+
+
+def test_update_task_rejects_empty_and_flattens_newlines():
+    ts.add_task("A")
+    assert ts.update_task("1", "   ").startswith("Error")
+    ts.update_task("1", "line one\nline two")
+    assert ts.list_tasks() == ["line one line two"]
+
+
+def test_update_task_on_empty_list():
+    assert "empty" in ts.update_task("1", "X")

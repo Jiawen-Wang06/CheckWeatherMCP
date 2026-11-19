@@ -6,3 +6,6 @@ eval/results/
 # Python caches
 __pycache__/
 .pytest_cache/
+
+# Runtime task list (created on first add_task; holds personal data)
+tasks.txt

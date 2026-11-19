@@ -83,6 +83,8 @@ The web app supports the same slash commands as the terminal client, plus `/help
 ### Task server ([`task_server.py`](../task_server.py))
 
 - **`add_task(task_description)`**, and **`list_tasks()`** (read-only).
+- **`clear_tasks()`**: empties the whole list.
+- **`update_task(task, new_description)`**: replaces one task in place. `task` is its number (counting from 1) or its full current text, case-insensitive. Unknown or ambiguous targets return an error with the numbered list, so the model can retry.
 - **`plan_trip_prompt(destination, duration_in_days)`**: the trip starts tomorrow. The prompt checks the forecast using the *weather* server's tool, puts outdoor activities on dry days and indoor ones on days with a 50% or higher chance of rain, and saves each activity as a task.
 - **`plan_trip_for_future_date(destination, from_date, to_date)`**: plans exact dates up to 14 days ahead.
   - It validates the dates and lists each trip date with its weekday, because models often work out weekdays wrong.
