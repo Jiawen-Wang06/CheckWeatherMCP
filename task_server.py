@@ -65,6 +65,78 @@ def list_tasks() -> List[str]:
         print(f"Error reading tasks file: {e}")
         return []
 
+@mcp.tool(annotations=ToolAnnotations(destructiveHint=True, idempotentHint=True))
+def clear_tasks() -> str:
+    """
+    Deletes ALL tasks from the to-do list, leaving it empty.
+
+    Only use this when the user clearly asks to clear, empty, reset or delete
+    everything on their to-do list. This cannot be undone.
+
+    Returns:
+        A string confirming how many tasks were removed.
+    """
+    try:
+        removed = len(list_tasks())
+        # 'w' mode truncates the file (and creates it if missing), leaving an empty list
+        with open(TASKS_FILE, "w", encoding="utf-8"):
+            pass
+        return f"Cleared the to-do list ({removed} task(s) removed)."
+    except Exception as e:
+        return f"An error occurred while clearing the tasks: {e}"
+
+@mcp.tool(annotations=ToolAnnotations(destructiveHint=True, idempotentHint=True))
+def update_task(task: str, new_description: str) -> str:
+    """
+    Replaces one existing task on the to-do list with new text, keeping its position.
+
+    Args:
+        task: Which task to change. Either its number as shown by list_tasks,
+              counting from 1 (e.g. "2" for the second task), or the task's
+              current text (e.g. "Buy groceries"; case-insensitive, must match
+              the whole task). A value made only of digits is always treated
+              as a number.
+        new_description: The text the task should have after the update,
+                         e.g. "Buy groceries and milk".
+
+    Returns:
+        A string confirming the change, or an error message that includes the
+        current numbered list so the right task can be chosen.
+    """
+    new_description = " ".join(new_description.split())  # one line, so the task stays a single entry
+    if not new_description:
+        return "Error: new_description must not be empty."
+
+    tasks = list_tasks()
+    if not tasks:
+        return "Error: the to-do list is empty, so there is nothing to update."
+
+    numbered = "\n".join(f"{i}. {t}" for i, t in enumerate(tasks, start=1))
+    target = str(task).strip()
+    if target.isdigit():
+        number = int(target)
+        if not 1 <= number <= len(tasks):
+            return f"Error: there is no task number {number}. The list has {len(tasks)} task(s):\n{numbered}"
+        index = number - 1
+    else:
+        matches = [i for i, t in enumerate(tasks) if t.casefold() == target.casefold()]
+        if not matches:
+            return f"Error: no task matches '{target}'. Current tasks:\n{numbered}"
+        if len(matches) > 1:
+            positions = ", ".join(str(i + 1) for i in matches)
+            return (f"Error: '{target}' matches several tasks (numbers {positions}). "
+                    f"Pass the task number instead. Current tasks:\n{numbered}")
+        index = matches[0]
+
+    old = tasks[index]
+    tasks[index] = new_description
+    try:
+        with open(TASKS_FILE, "w", encoding="utf-8") as f:
+            f.writelines(f"{t}\n" for t in tasks)
+    except Exception as e:
+        return f"An error occurred while updating the task: {e}"
+    return f"Task {index + 1} was updated from '{old}' to '{new_description}'."
+
 @mcp.prompt()
 def plan_trip_prompt(destination: str, duration_in_days: int) -> str:
     """

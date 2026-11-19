@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="media/header.png" width="560" alt="MCP DayPlanner: a LangGraph agent (gpt-4o-mini) connected through MCP to a Weather Server and a Task Server.">
+  <img src="media/header.png" width="80%" alt="MCP DayPlanner: a LangGraph agent (gpt-4o-mini) connected through MCP to a Weather Server and a Task Server.">
 </p>
 
 | | |
@@ -7,7 +7,7 @@
 | **Agent** | ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white) ![LangGraph](https://img.shields.io/badge/LangGraph-1.2-1C3C3C?logo=langchain&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-FastMCP%20%C2%B7%20stdio-000000?logo=modelcontextprotocol&logoColor=white) ![LangChain MCP adapters](https://img.shields.io/badge/LangChain-MCP%20adapters-1C3C3C?logo=langchain&logoColor=white) |
 | **LLM** | ![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?logo=openai&logoColor=white) ![Judge](https://img.shields.io/badge/LLM%20judge-GPT--4o-412991?logo=openai&logoColor=white) |
 | **App** | ![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white) ![OpenWeather](https://img.shields.io/badge/Data-OpenWeather-EB6E4B) |
-| **Quality** | [![Eval](https://img.shields.io/badge/Eval-98.7%25%20pass%20%C2%B7%20228%20runs-2EA44F)](eval/README.md) ![pytest](https://img.shields.io/badge/pytest-78%20tests-0A9EDC?logo=pytest&logoColor=white) [![Build status](https://github.com/Jiawen-Wang06/MCP-DayPlanner/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Jiawen-Wang06/MCP-DayPlanner/actions/workflows/docker-image.yml) |
+| **Quality** | [![Eval](https://img.shields.io/badge/Eval-98.7%25%20pass%20%C2%B7%20228%20runs-2EA44F)](eval/README.md) ![pytest](https://img.shields.io/badge/pytest-88%20tests-0A9EDC?logo=pytest&logoColor=white) [![Build status](https://github.com/Jiawen-Wang06/MCP-DayPlanner/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Jiawen-Wang06/MCP-DayPlanner/actions/workflows/docker-image.yml) |
 | **Delivery** | ![Docker](https://img.shields.io/badge/Docker-GHCR-2496ED?logo=docker&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white) ![Azure App Service](https://img.shields.io/badge/Azure-App%20Service-0078D4) |
 
 **An AI agent that plans your day from plain English.** One LangGraph agent uses **two MCP servers**, one for live weather and forecasts and one for tasks. It decides which tools to call for requests like *"if it's raining in Vancouver, add 'pack umbrella'"* or *"plan my Quebec City trip from Friday to Sunday"*. For the trip, it checks the forecast for those dates, moves activities indoors on rainy or snowy days, and writes the itinerary to your task list.
@@ -18,19 +18,13 @@
 
 ## Highlights
 
-- **Measured, not just demoed.** A 76-case system evaluation runs the real agent against the real MCP servers, and scores **98.7%** over 228 runs (95% CI 96–100%). It covers tool selection, arguments, grounding, final task state, write order, and LLM-judged faithfulness.
-- **The evaluation is shown to catch failures.**
-  - Negative controls drop the pass rate to 14.5% with tools removed, and grounding to 37.7% with shuffled weather.
-  - The evaluation found five real defects, each fixed and re-measured. For example, write order went from 8.3% to 100%.
-- **Agent engineering beyond the framework defaults.**
-  - A custom tool node runs read-only MCP calls in parallel but writes in order, so the agent looks before it writes.
-  - Dates and weekdays are computed by code rather than trusted to the model.
-  - Forecasts are grouped by each location's local day.
-- **Secure by design for a public demo.**
-  - Visitors bring their own OpenAI key, which is never stored or logged.
-  - The OpenWeather key never reaches the model, and key-shaped text is redacted.
-  - Sessions are isolated and rate-limited.
-- **Shipped through a full pipeline.** **78 unit tests** gate a GitHub Actions pipeline that builds the Docker image, pushes it to GHCR, and deploys it to Azure App Service.
+- **Multi-server agent.** Turned plain-English requests into correct tool use across two services, with **100% tool selection and 100% argument accuracy** in the system eval, by building a **LangGraph** agent (**gpt-4o-mini**) that connects through **LangChain MCP adapters** over stdio to two **FastMCP** servers exposing 6 tools, 3 prompts and 2 resources.
+- **Measurable reliability.** Reached a **98.7% pass rate over 228 runs** (76 test cases × 3 trials each; 95% confidence interval 96.2–99.5%), by building a **76-case evaluation harness** that runs the real agent against the real MCP servers with pinned fixtures. It grades tool choice, arguments, grounding, final task state and write order, and uses **gpt-4o as an LLM judge** for faithfulness and per-case rubrics.
+- **An eval that is shown to catch failures.** Found and fixed **5 real defects** (for example, forecast questions went from 61.9% to 100%) and proved the grader can fail (pass rate drops to **14.5%** with tools removed, grounding to **37.7%** with shuffled weather), by adding **negative controls**, Wilson confidence intervals, pass^3 (the share of test cases that pass on all 3 trials, which measures consistency), and a change log for every edit to a case.
+- **Correct ordering without losing speed.** Raised task write order from **8.3% to 100%** with no measurable latency cost, by replacing LangGraph's default `ToolNode` with a **custom tool node** that runs read-only calls (MCP `readOnlyHint`) in parallel, writes in order, and holds writes back until lookups return ("look before you write").
+- **Weather-aware planning the model can't get wrong.** Brought the forecast category from **61.9% to 100%** and every trip rubric to 100%, by having code group the **OpenWeather** forecast by each location's local day, compute dates and weekdays, and pass explicit date ranges, instead of trusting the model with calendar math.
+- **A public demo that is safe to run.** Kept every API key out of storage, logs and the model's context, by building a **FastAPI** web app where visitors bring their own OpenAI key, with isolated per-session task files, key redaction, input limits, and per-IP rate limiting (10/minute, 60/hour).
+- **Automated delivery.** Shipped every merge to `master` to production behind a gate of **88 unit tests**, by building a **GitHub Actions** pipeline that runs the tests, builds a **Docker** image, pushes it to **GHCR** tagged with the commit SHA, and deploys that exact image to **Azure App Service**.
 
 ## Evaluation
 
@@ -48,7 +42,7 @@ The only failing case is a real gap in the model's knowledge: gpt-4o-mini says M
 - **Reproducible.** Weather comes from fixtures, each trial has its own task file, and "today" is pinned, so "tomorrow" means the same date on every run.
 - **Graded on behaviour, not just the final text.** Tool choice, arguments, facts in the answer, the task file after the run and write order are each checked, plus LLM-judged faithfulness and per-case rubrics.
 - **The grader is shown to fail.** The negative controls above also caught a weak check that had passed a wrong answer.
-- **Statistically honest.** Results come with Wilson 95% confidence intervals and pass^k over repeated trials. A [change log](eval/README.md#change-log) records every edit to an existing case.
+- **Statistically honest.** Results come with Wilson 95% confidence intervals, which give the likely range of the true pass rate, and pass^3, the share of test cases that pass on all 3 trials. An LLM can answer the same request differently each time, so pass^3 shows whether the agent is reliable, not just whether it can succeed. A [change log](eval/README.md#change-log) records every edit to an existing case.
 
 **What the eval caught and how each was fixed:**
 
@@ -61,7 +55,7 @@ The only failing case is a real gap in the model's knowledge: gpt-4o-mini says M
 | A rubric found an outdoor plan for a 70%-rain day | criteria → 100% | Trip rule: 50% or higher chance of rain → indoors |
 
 ```powershell
-python -m pytest                                      # 78 unit tests, no keys needed
+python -m pytest                                      # 88 unit tests, no keys needed
 python .\eval\run_eval.py --trials 3 --judge gpt-4o   # system eval
 python .\eval\run_eval.py --min-pass 0.85             # use as a CI gate
 ```
@@ -75,7 +69,8 @@ Browser / terminal ──► LangGraph agent (gpt-4o-mini, MemorySaver)
                             │  MultiServerMCPClient (stdio)
                 ┌───────────┴────────────┐
           weather_server            task_server
-  get_weather, get_forecast       add_task, list_tasks
+  get_weather, get_forecast       add_task, list_tasks,
+                                  update_task, clear_tasks
   compare_weather_prompt          plan_trip_prompt, plan_trip_for_future_date
   file://delivery_log             file://meeting_notes
           │
@@ -111,7 +106,7 @@ weather_server.py     MCP server: current weather and dated forecasts
 task_server.py        MCP server: tasks and weather-aware trip prompts
 web/                  FastAPI app and chat UI (bring your own key)
 eval/                 System eval: runner, 76 cases, fixtures, methodology
-tests/                78 unit tests
+tests/                88 unit tests
 Dockerfile            Single container deployed to Azure App Service
 .github/workflows/    CI/CD: test → build → push to GHCR → deploy
 ```

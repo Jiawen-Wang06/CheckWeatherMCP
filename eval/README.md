@@ -6,7 +6,7 @@ There are two layers:
 
 | Layer | Question it answers | API key? |
 |---|---|---|
-| **Unit tests** (78, [`tests/`](../tests)) | Do the servers, caching, forecast aggregation, tool ordering, web app and the grader itself behave correctly, including on errors? | No |
+| **Unit tests** (88, [`tests/`](../tests)) | Do the servers, caching, forecast aggregation, tool ordering, web app and the grader itself behave correctly, including on errors? | No |
 | **System eval** (76 cases, this folder) | Does the LLM agent pick the right tools, pass the right arguments, report the tool results faithfully and leave the task list correct? | Yes |
 
 ## How it works
@@ -24,7 +24,10 @@ cases.jsonl ──► real LangGraph agent (gpt-4o-mini) ──► real MCP serv
 - **End to end.** Each case runs the real agent against the real MCP servers. Only the weather API is replaced, by fixtures.
 - **Reproducible.** Fixtures fix the weather data, each trial gets its own temporary task file, and the agent's "today" is set to the fixtures' date (Monday 2026-03-02). So "tomorrow" or "this Friday" means the same thing on every run.
 - **All entry points are covered.** A case can start with a plain message, a multi-turn conversation, an MCP **prompt** or an MCP **resource**, which is loaded the same way `/resource` loads it.
-- **Statistics.** Results come with Wilson 95% confidence intervals, plus pass@k and pass^k over repeated trials.
+- **Statistics.** Each case runs k times (k = 3 for the reported numbers), because an LLM can answer the same request differently each time.
+  - **Wilson 95% confidence interval:** the likely range of the true pass rate, given a limited number of runs. The Wilson method stays accurate when a score is close to 100%.
+  - **pass@k** ("pass at k"): the share of cases where **at least one** of the k trials passes. It measures whether the agent is *capable* of the task, and rises as k grows.
+  - **pass^k** ("pass to the power of k"): the share of cases where **all** k trials pass. It measures whether the agent is *reliable*, and falls as k grows. This is the stricter number, because a real user gets only one try.
 - **The judge sees the full context.** The LLM judge receives earlier turns separately from the final answer, and tool outputs of up to 8,000 characters.
 
 ## Metrics
@@ -103,8 +106,8 @@ gpt-4o-mini, 76 cases × 3 trials = 228 runs, judged by gpt-4o.
 | order | 100% (21/21) |
 | faithfulness (LLM judge) | 100% (228/228) |
 | criteria (per-case rubrics) | 100% (15/15) |
-| **overall_pass** | **98.7% (225/228), 95% CI 96–100%** |
-| pass^3 | 98.7% |
+| **overall_pass** | **98.7% (225/228), 95% confidence interval 96.2–99.5%** |
+| pass^3 (all 3 trials of a case pass) | 98.7% |
 | Mean / p95 latency, tokens per request | 13.2 s / 30.2 s, 2,130 |
 
 Every category scores 100% except `no_tool` (80%). Its only failure is `nt-04`: gpt-4o-mini says MCP stands for "Model **Control** Protocol". That is a gap in the model's knowledge, not a routing problem.
@@ -147,7 +150,7 @@ Both checks were fixed, and a regression test covers the grader.
 | order | **8.3%** | 100% | 100% |
 | faithfulness | 97.2% | 98.3% | 100% |
 | **overall_pass** (95% CI) | 89.4% (84–93%) | 96.7% (93–98%) | **98.3% (95–99%)** |
-| pass^3 | 86.7% | 96.7% | 98.3% |
+| pass^3 (all 3 trials of a case pass) | 86.7% | 96.7% | 98.3% |
 
 `tool_selection` and `args` were 100% in all three columns, and `grounded` was 97.6%. The before and after columns use the original judge, so the comparison stays like-for-like. [`tests/test_tool_ordering.py`](../tests/test_tool_ordering.py) reproduces the bug with plain `ToolNode` and checks the fix.
 
